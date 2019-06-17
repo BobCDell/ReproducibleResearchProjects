@@ -13,11 +13,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Loading and Preprocessing the Data
 
-###    Show any code that is needed to load and, if necessary, process/transform the data into a format suitable for your analysis
+(Show any code that is needed to load and, if necessary, process/transform the data into a format suitable for your analysis)
 
 1. Load the data.
 
-```{r}
+```{r import_data}
 setwd("C:\\Users\\bcoon\\Desktop\\Files\\Coursera\\")
 
 the_data <- read.table(unz(".\\Data\\repdata_data_activity.zip",
@@ -31,7 +31,7 @@ summary(the_data)
 1.  Calculate the total number of steps per day:  
   (Aggregate the data by date to determine the total number of steps taken per day)
 
-```{r}
+```{r calculate_daily_step_summary}
 the_agg_data <- aggregate(the_data$steps, by=list(Category = the_data$date), FUN=sum)
 
 the_agg_data
@@ -40,7 +40,7 @@ the_agg_data
 
 2.   Make a histogram of the total number of steps taken each day (Chose ggplot to generate this histogram):
 
-```{r}
+```{r create_histogram_of_daily_steps}
 library("ggplot2")
 
 steps_per_day_hist <- ggplot(the_agg_data, aes(x)) + geom_histogram(binwidth = 2500, 
@@ -56,23 +56,28 @@ steps_per_day_hist
 
 ##  Mean steps per day: 
 
-```{r}
+```{r mean_steps_per_day}
 the_total_mean <- mean(the_agg_data$x, na.rm = TRUE)
-the_total_mean
+theMean <- paste("Mean daily steps: ", the_total_mean)
+theMean
+
 ```
+
+
 
 ##  Median steps per day: 
 
-```{r}
+```{r median_steps_per_day}
 the_total_median <- median(the_agg_data$x, na.rm = TRUE)
-the_total_median
+theMedian <- paste("Median daily steps: ", the_total_median)
+theMedian
 ```
 
 #  Average Daily Activity Pattern
 
 1. Time series plot of the 5 minute interval (x) and averaged number of steps taken averaged across all days (y)
 
-```{r}
+```{r time_series_activity_plot}
 
 the_intervals_agg <- aggregate(the_data$steps, list(the_data$interval), FUN = mean, na.rm = TRUE )
 
@@ -88,11 +93,21 @@ the_line_plot
 
 2.  Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-```{r}
+```{r interval_containing_max_average_steps}
 
 max_interval <- the_intervals_agg[which(the_intervals_agg$x == max(the_intervals_agg$x)),]
 
-max_interval
+val1 <- max_interval[1]
+val2 <- max_interval[2]
+
+
+string1 <- toString(val1)
+string2 <- toString(val2)
+
+line_one <- paste("The daily five (5) minute interval containing the maximum number of steps: ", string1)
+line_two <- paste("The average number of steps in this daily five (5) minute interval: ", string2)
+
+cat(line_one, line_two, sep = "\n")
 
 ```
 
@@ -103,32 +118,38 @@ To do this, create a dataset with missing data ("NA" values) excluded, create a 
 1.  Calculate and report the total number of missing values in the dataset:
 To do this, simply calculate the number of rows with missing values for the "steps" column value:
 
-```{r}
-num_na_rows <- nrow(the_data[the_data$steps == "NA", ])
+```{r determine_number_of_NA_values}
 
-num_na_rows
+num_na_rows <- nrow(the_data[is.na(the_data$steps), ])
+
+paste("Number of rows containing missing data ('NA') step values: ", num_na_rows)
 
 ```
 
 2.  Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
-3.  Create a new dataset that is equal to the original dataset but with the missing data filled in.
+3.  Create a new dataset that is equal to the original dataset but with the missing data filled in.  
+
 To fulfill steps 2. and 3., create a dataset with missing data ("NA" values) excluded, create a table of the aggregated means, and then fill in the missing values in the original dataset with the means from the aggregated dataset matched on the corresponding intervals.
 
-```{r}
+```{r impute_missing_data_values}
 the_new_data <- na.omit(the_data)
 the_new_agg_data <- aggregate(the_new_data$steps, list(the_new_data$interval), mean)
 the_final_data <- the_data
 the_final_data$step_count <- ifelse(is.na(the_final_data$steps), the_new_agg_data$x[match(the_final_data$interval, 
                                      the_new_agg_data$Group.1)], the_final_data$steps)
 the_final_data$steps <- round(the_final_data$step_count,0)
+
+the_final_data
+
 the_final_agg_data <- aggregate(the_final_data$steps, list(the_final_data$date), sum)
 str(the_final_data)
 ```
 
 4.  Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. 
 
-```{r}
-imputed_data_hist <- ggplot(the_final_agg_data, aes(x)) + geom_histogram(binwidth = 2500, col = "red", fill="blue")
+```{r histogram_of_steps_with_imputed_NA_values}
+imputed_data_hist <- ggplot(the_final_agg_data, aes(x)) + geom_histogram(binwidth = 2500, 
+                            col = "red", fill="blue")
 
 imputed_data_hist <- imputed_data_hist + labs(x = "Steps", y = "Number of Occurrences",
                               title = "Histogram of Steps per Day",
@@ -140,16 +161,21 @@ imputed_data_hist
 
 ##  Mean steps per day using imputed md data: 
 
-```{r}
+```{r mean_steps_per_day_imputed_md_values}
 the_total_md_mean <- mean(the_final_agg_data$x, na.rm = TRUE)
-the_total_md_mean
+
+theMDMean <- paste("Mean daily steps (NA values imputed): ", the_total_md_mean)
+theMDMean
 ```
 
 ##  Median steps per day using imputed md data: 
 
-```{r}
+```{r median_steps_per_day_imputed_md_values}
 the_total_md_median <- median(the_final_agg_data$x, na.rm = TRUE)
-the_total_md_median
+
+theMDMedian <- paste("Median daily steps (NA values imputed): ", the_total_md_median)
+theMDMedian
+
 ```
 
 #  Weekend and Weekday Activity Differences:
@@ -157,7 +183,7 @@ the_total_md_median
 1.  Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
 
 
-```{r}
+```{r add_weekday_weekend_variable}
 
 summary(the_final_data)
 the_final_data$day_type <- weekdays(as.Date(the_final_data$date))
@@ -168,7 +194,7 @@ the_final_data$day_type <- ifelse(the_final_data$day_type == "Saturday" | the_fi
 
 2.  Make a panel plot containing a time series plot (i.e. \color{red}{\verb|type = "l"|}type="l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
 
-```{r}
+```{r line_plot_daily_activity_panels_by_weekday_weekend}
 library("ggplot2")
 
 the_daytype_agg <- aggregate(step_count ~ interval + day_type, data = the_final_data, 
@@ -184,14 +210,3 @@ the_daytype_line_plot <- ggplot(the_daytype_agg, aes(x = interval, y = step_coun
 
 the_daytype_line_plot
 ```
-
-
-
-
-
-
-
-
-
-
-
