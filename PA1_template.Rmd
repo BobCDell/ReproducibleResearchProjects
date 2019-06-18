@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Project Assignment
@@ -18,6 +18,7 @@ knitr::opts_chunk$set(echo = FALSE)
 1. Load the data.
 
 ```{r import_data}
+
 setwd("C:\\Users\\bcoon\\Desktop\\Files\\Coursera\\")
 
 the_data <- read.table(unz(".\\Data\\repdata_data_activity.zip",
@@ -58,8 +59,7 @@ print(steps_per_day_hist)
 
 ```{r mean_steps_per_day}
 the_total_mean <- mean(the_agg_data$x, na.rm = TRUE)
-theMean <- paste("Mean daily steps: ", the_total_mean)
-print(theMean)
+print(the_total_mean)
 
 ```
 
@@ -69,8 +69,7 @@ print(theMean)
 
 ```{r median_steps_per_day}
 the_total_median <- median(the_agg_data$x, na.rm = TRUE)
-theMedian <- paste("Median daily steps: ", the_total_median)
-print(theMedian)
+print(the_total_median)
 ```
 
 #  Average Daily Activity Pattern
@@ -78,6 +77,8 @@ print(theMedian)
 1. Time series plot of the 5 minute interval (x) and averaged number of steps taken averaged across all days (y)
 
 ```{r time_series_activity_plot, fig.width = 9}
+
+library("ggplot2")
 
 the_intervals_agg <- aggregate(the_data$steps, list(the_data$interval), FUN = mean, na.rm = TRUE )
 
@@ -90,6 +91,10 @@ print(the_line_plot)
 
 ```
 
+Based on the line plot shown above, the activity pattern exhibits the following tendencies: Sharp escalation of activity at roughly 0800, peaking at a level of 206 steps per five (5) minutes at 0835.  The activity then drops off sharply.  At roughly noon (1200), 4:00 p.m. (1600), and 6:00 p.m., activity exhibits small local maxima at around 100 steps/5 minutes before tailing off steeply after 8:00 p.m. (2000).
+
+
+
 
 2.  Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
@@ -97,19 +102,11 @@ print(the_line_plot)
 
 max_interval <- the_intervals_agg[which(the_intervals_agg$x == max(the_intervals_agg$x)),]
 
-val1 <- max_interval[1]
-val2 <- max_interval[2]
-
-
-string1 <- toString(val1)
-string2 <- toString(val2)
-
-line_one <- paste("The daily five (5) minute interval containing the maximum number of steps: ", string1)
-line_two <- paste("The average number of steps in this daily five (5) minute interval: ", string2)
-
-cat(line_one, line_two, sep = "\n")
+print(max_interval)
 
 ```
+
+The daily five (minute interval containing the maximum number of steps thus occurs at 0835 with an average of 206.17 steps.
 
 #  Imputing Missing Values
 
@@ -122,7 +119,7 @@ To do this, simply calculate the number of rows with missing values for the "ste
 
 num_na_rows <- nrow(the_data[is.na(the_data$steps), ])
 
-print(paste("Number of rows containing missing data ('NA') step values: ", num_na_rows))
+print(num_na_rows)
 
 ```
 
@@ -146,6 +143,9 @@ print(str(the_final_data))
 4.  Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. 
 
 ```{r histogram_of_steps_with_imputed_NA_values, fig.width = 9}
+
+library("ggplot2")
+
 imputed_data_hist <- ggplot(the_final_agg_data, aes(x)) + geom_histogram(binwidth = 2500, 
                             col = "red", fill="blue")
 
@@ -162,19 +162,24 @@ print(imputed_data_hist)
 ```{r mean_steps_per_day_imputed_md_values}
 the_total_md_mean <- mean(the_final_agg_data$x, na.rm = TRUE)
 
-theMDMean <- paste("Mean daily steps (NA values imputed): ", the_total_md_mean)
-print(theMDMean)
+print(the_total_md_mean)
 ```
+
+This value differs very slightly from the data computed above without missing data imputation: 10766.19 vs 10765.64, barely one (1) step difference.
 
 ##  Median steps per day using imputed md data: 
 
 ```{r median_steps_per_day_imputed_md_values}
 the_total_md_median <- median(the_final_agg_data$x, na.rm = TRUE)
 
-theMDMedian <- paste("Median daily steps (NA values imputed): ", the_total_md_median)
-print(theMDMedian)
+print(the_total_md_median)
 
 ```
+
+Again, this value differs very slightly from the data computed above without missing data imputation: 10765 vs 10762, only three (3) steps difference.
+
+In this particular example, the impact of imputing missing data on the estimates of the total daily number of steps is minimal.
+
 
 #  Weekend and Weekday Activity Differences:
 
@@ -183,7 +188,6 @@ print(theMDMedian)
 
 ```{r add_weekday_weekend_variable}
 
-summary(the_final_data)
 the_final_data$day_type <- weekdays(as.Date(the_final_data$date))
 
 the_final_data$day_type <- ifelse(the_final_data$day_type == "Saturday" | the_final_data$day_type == "Sunday",
@@ -195,12 +199,11 @@ print(str(the_final_data))
 2.  Make a panel plot containing a time series plot (i.e. \color{red}{\verb|type = "l"|}type="l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
 
 ```{r line_plot_daily_activity_panels_by_weekday_weekend, fig.width = 9}
+
 library("ggplot2")
 
 the_daytype_agg <- aggregate(step_count ~ interval + day_type, data = the_final_data, 
                              FUN = mean, na.action = na.omit)
-
-summary(the_daytype_agg)
 
 the_daytype_line_plot <- ggplot(the_daytype_agg, aes(x = interval, y = step_count, col = "red")) + 
     geom_line() +
@@ -210,3 +213,11 @@ the_daytype_line_plot <- ggplot(the_daytype_agg, aes(x = interval, y = step_coun
 
 print(the_daytype_line_plot)
 ```
+
+As can be seen above, the time series' of average steps by weekday and by weekend exhibit some similarities and also some differences:
+
+Similarities: Activity picks up in the morning to peak at afound 0835 in both datasets.  Both datasets exhibit several additional, smaller spikes of activity throughout the day before falling off in the evening.
+
+Differences:  Activity levels peak at a lower value on weekends, though the subsequent daily peaks are higher in value than those found on weekedays.  Weekend activity also features an additional spike just after 8:00 p.m. (2000), possibly attributable to weekend nightlife activity.
+
+Examining the reasons for these differences should provide fruitful areas for research.
