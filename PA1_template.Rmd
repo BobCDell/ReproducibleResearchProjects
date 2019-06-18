@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
 # Project Assignment
@@ -23,7 +23,7 @@ setwd("C:\\Users\\bcoon\\Desktop\\Files\\Coursera\\")
 the_data <- read.table(unz(".\\Data\\repdata_data_activity.zip",
                            "activity.csv" ), header = T, sep = ",")
 
-summary(the_data)
+print(summary(the_data))
 ```
 
 
@@ -34,13 +34,13 @@ summary(the_data)
 ```{r calculate_daily_step_summary}
 the_agg_data <- aggregate(the_data$steps, by=list(Category = the_data$date), FUN=sum)
 
-the_agg_data
+print(the_agg_data)
 
 ```
 
 2.   Make a histogram of the total number of steps taken each day (Chose ggplot to generate this histogram):
 
-```{r create_histogram_of_daily_steps}
+```{r create_histogram_of_daily_steps, fig.width = 9}
 library("ggplot2")
 
 steps_per_day_hist <- ggplot(the_agg_data, aes(x)) + geom_histogram(binwidth = 2500, 
@@ -48,7 +48,7 @@ steps_per_day_hist <- ggplot(the_agg_data, aes(x)) + geom_histogram(binwidth = 2
                               labs(x = "Steps", y = "Number of Occurrences",
                               title = "Histogram of Steps per Day")
 
-steps_per_day_hist
+print(steps_per_day_hist)
 
 ```
 
@@ -59,7 +59,7 @@ steps_per_day_hist
 ```{r mean_steps_per_day}
 the_total_mean <- mean(the_agg_data$x, na.rm = TRUE)
 theMean <- paste("Mean daily steps: ", the_total_mean)
-theMean
+print(theMean)
 
 ```
 
@@ -70,14 +70,14 @@ theMean
 ```{r median_steps_per_day}
 the_total_median <- median(the_agg_data$x, na.rm = TRUE)
 theMedian <- paste("Median daily steps: ", the_total_median)
-theMedian
+print(theMedian)
 ```
 
 #  Average Daily Activity Pattern
 
 1. Time series plot of the 5 minute interval (x) and averaged number of steps taken averaged across all days (y)
 
-```{r time_series_activity_plot}
+```{r time_series_activity_plot, fig.width = 9}
 
 the_intervals_agg <- aggregate(the_data$steps, list(the_data$interval), FUN = mean, na.rm = TRUE )
 
@@ -86,7 +86,7 @@ the_line_plot <- ggplot(the_intervals_agg, aes(x = Group.1, y = x)) + geom_line(
                             "Time Series of Average Steps", y = "Number of Steps", 
                              x = "Time Interval")
 
-the_line_plot
+print(the_line_plot)
 
 ```
 
@@ -116,13 +116,13 @@ cat(line_one, line_two, sep = "\n")
 To do this, create a dataset with missing data ("NA" values) excluded, create a table of the aggregated means, and then fill in the missing values in the original dataset with the means from the aggregated dataset matched on the corresponding intervals.
 
 1.  Calculate and report the total number of missing values in the dataset:
-To do this, simply calculate the number of rows with missing values for the "steps" column value:
+To do this, simply calculate the number of rows with missing values for the "steps" column value (This value is also available from visual inspection of the summary() operation on the original dataset above):
 
 ```{r determine_number_of_NA_values}
 
 num_na_rows <- nrow(the_data[is.na(the_data$steps), ])
 
-paste("Number of rows containing missing data ('NA') step values: ", num_na_rows)
+print(paste("Number of rows containing missing data ('NA') step values: ", num_na_rows))
 
 ```
 
@@ -139,15 +139,13 @@ the_final_data$step_count <- ifelse(is.na(the_final_data$steps), the_new_agg_dat
                                      the_new_agg_data$Group.1)], the_final_data$steps)
 the_final_data$steps <- round(the_final_data$step_count,0)
 
-the_final_data
-
 the_final_agg_data <- aggregate(the_final_data$steps, list(the_final_data$date), sum)
-str(the_final_data)
+print(str(the_final_data))
 ```
 
 4.  Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. 
 
-```{r histogram_of_steps_with_imputed_NA_values}
+```{r histogram_of_steps_with_imputed_NA_values, fig.width = 9}
 imputed_data_hist <- ggplot(the_final_agg_data, aes(x)) + geom_histogram(binwidth = 2500, 
                             col = "red", fill="blue")
 
@@ -155,7 +153,7 @@ imputed_data_hist <- imputed_data_hist + labs(x = "Steps", y = "Number of Occurr
                               title = "Histogram of Steps per Day",
                               subtitle = "(Missing Data Values Imputed)")
 
-imputed_data_hist
+print(imputed_data_hist)
 
 ```
 
@@ -165,7 +163,7 @@ imputed_data_hist
 the_total_md_mean <- mean(the_final_agg_data$x, na.rm = TRUE)
 
 theMDMean <- paste("Mean daily steps (NA values imputed): ", the_total_md_mean)
-theMDMean
+print(theMDMean)
 ```
 
 ##  Median steps per day using imputed md data: 
@@ -174,7 +172,7 @@ theMDMean
 the_total_md_median <- median(the_final_agg_data$x, na.rm = TRUE)
 
 theMDMedian <- paste("Median daily steps (NA values imputed): ", the_total_md_median)
-theMDMedian
+print(theMDMedian)
 
 ```
 
@@ -190,11 +188,13 @@ the_final_data$day_type <- weekdays(as.Date(the_final_data$date))
 
 the_final_data$day_type <- ifelse(the_final_data$day_type == "Saturday" | the_final_data$day_type == "Sunday",
                                     "Weekend", "Weekday")
+print(str(the_final_data))
+
 ```
 
 2.  Make a panel plot containing a time series plot (i.e. \color{red}{\verb|type = "l"|}type="l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
 
-```{r line_plot_daily_activity_panels_by_weekday_weekend}
+```{r line_plot_daily_activity_panels_by_weekday_weekend, fig.width = 9}
 library("ggplot2")
 
 the_daytype_agg <- aggregate(step_count ~ interval + day_type, data = the_final_data, 
@@ -208,5 +208,5 @@ the_daytype_line_plot <- ggplot(the_daytype_agg, aes(x = interval, y = step_coun
          "Time Series of Average Steps by Weekday vs. Weekend", y = "Number of Steps", 
        x = "Time Interval") + facet_grid(day_type ~ .) + theme(legend.position = "none")
 
-the_daytype_line_plot
+print(the_daytype_line_plot)
 ```
